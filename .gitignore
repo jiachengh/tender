@@ -1,0 +1,14 @@
+*.class
+*.log
+
+# Package Files #
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+.idea
+*.iml
+target

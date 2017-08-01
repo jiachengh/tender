@@ -13,15 +13,27 @@ import java.util.List;
  * Created by jiacheng on 17-7-31.
  */
 public class Test {
+    private static int clientNum = 3;
+    private static int benchmarkSize = 500;
+    private static int followerNum = 18;
     public static void main(String[] args) throws IOException, InterruptedException {
+        if(args.length>0){
+            if(args.length != 3){
+                System.err.println("param number must be 'benchmarksize' 'clientnum' 'followernum'");
+                System.exit(1);
+            }
+            benchmarkSize = Integer.valueOf(args[0]);
+            clientNum = Integer.valueOf(args[1]);
+            followerNum = Integer.valueOf(args[2]);
+        }
         List<Address> addresses = new ArrayList<>();
         List<RaftServer> raftServers = new ArrayList<>();
         // 开启5个服务器端口分别为8900-8904
-        for(int i=0; i<5; ++i) {
+        for(int i=0; i<followerNum+1; ++i) {
             addresses.add(new Address("127.0.0.1", 8900+i));
             raftServers.add(new RaftNode());
         }
-        for(int i=0; i<5; ++i){
+        for(int i=0; i<followerNum+1; ++i){
             int k = i;
             new Thread(()->{
                 try {
@@ -38,35 +50,35 @@ public class Test {
 
         // bootstrap
         new Thread(()-> {
-            raftServers.get(0).bootstrap(addresses.subList(1, 5));
+            raftServers.get(0).bootstrap(addresses.subList(1, followerNum+1));
         }).start();
 
         // 创建客户端
-        new Thread(()-> {
-            Client client = new Client(addresses.get(0).getIp(), addresses.get(0).getPort());
-            for(int i=0; i<100; ++i) {
-                client.put(""+i, "hello"+i);
-                System.out.println("putted "+i);
-            }
-            for(int i=0; i<100; ++i) {
-                String s = client.get(""+i, String.class);
-                System.out.println(s);
-            }
-        }).start();
-
-        new Thread(()-> {
-            Client client = new Client(addresses.get(0).getIp(), addresses.get(0).getPort());
-            for(int i=0; i<100; ++i) {
-                client.put("client2"+i, "client2 hello"+i);
-                System.out.println("putted "+i);
-            }
-            for(int i=0; i<100; ++i) {
-                String s = client.get("client2"+i, String.class);
-                System.out.println(s);
-            }
-        }).start();
-
-
+        List<Client> clientList = new ArrayList<>();
+        for(int i=0; i<clientNum; ++i) {
+            clientList.add(new Client(addresses.get(0).getIp(), addresses.get(0).getPort()));
+        }
+        for(int i=0; i<clientNum; ++i) {
+            int clientIndex = i;
+            new Thread(() -> {
+                Client client = clientList.get(clientIndex);
+                double begin = System.currentTimeMillis();
+                for (int j = 0; j < benchmarkSize; ++j) {
+                    client.put(clientIndex+"key" + j, "client"+clientIndex+" " + j);
+                }
+                for (int j = 0; j < benchmarkSize; ++j) {
+                    String s = client.get(clientIndex+"key" + j, String.class);
+//                    System.out.println(s);
+                }
+                double time = System.currentTimeMillis() - begin;
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println("client"+clientIndex+" cost time is " + time / 1000 + " sec");
+            }).start();
+        }
     }
 
 

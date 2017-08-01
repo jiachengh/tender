@@ -32,7 +32,7 @@ public class RaftNode implements RaftServer{
     // follower中 加Entry的原子操作
     private synchronized void addEntry(Entry entry) throws InterruptedException {
         while (log.size() != entry.getLogIndex() ){
-            Thread.sleep(1);
+            Thread.interrupted();
         }
         log.add(entry);
     }
@@ -112,14 +112,13 @@ public class RaftNode implements RaftServer{
                 .addService(new RaftServiceImpl())
                 .build()
                 .start();
-        System.out.println("raftServer started");
-        Runtime.getRuntime().addShutdownHook(
-                new Thread(()->{
-                    System.out.println("JVM shutdown");
-                    RaftNode.this.raftServer.shutdown();
-                    System.out.println("Server shutdown");
-                })
-        );
+//        Runtime.getRuntime().addShutdownHook(
+//                new Thread(()->{
+//                    System.out.println("JVM shutdown");
+//                    RaftNode.this.raftServer.shutdown();
+//                    System.out.println("Server shutdown");
+//                })
+//        );
         raftServer.awaitTermination();
     }
 
@@ -135,34 +134,27 @@ public class RaftNode implements RaftServer{
         for(int i=0; i<followerNum; ++i) {
             Address address = followerAddresses.get(i);
             int followerIndex = i;
-            new Thread(){
-                @Override
-                public void run() {
-                    // 连接
-                    ManagedChannel channel = ManagedChannelBuilder.forAddress(address.getIp(), address.getPort())
-                            .usePlaintext(true)  // 不用SSL
+            new Thread(() -> {
+                // 连接
+                ManagedChannel channel = ManagedChannelBuilder.forAddress(address.getIp(), address.getPort())
+                        .usePlaintext(true)  // 不用SSL
+                        .build();
+                RaftServiceGrpc.RaftServiceBlockingStub blockingStub = RaftServiceGrpc.newBlockingStub(channel);
+                // 不断发送AppendEntries RPC
+                while(true) {
+                    Entry entry = getFollowNextEntry(followerIndex);
+                    AppendEntriesRequest request = AppendEntriesRequest.newBuilder()
+                            .setEntryJson(JSON.toJSONString(entry))
+                            .setCommittedIndex(lastApplied)
+                            .setTerm(currentTerm)
                             .build();
-                    RaftServiceGrpc.RaftServiceBlockingStub blockingStub = RaftServiceGrpc.newBlockingStub(channel);
-                    // 不断发送AppendEntries RPC
-                    while(true) {
-                        Entry entry = getFollowNextEntry(followerIndex);
-                        AppendEntriesRequest request = AppendEntriesRequest.newBuilder()
-                                .setEntryJson(JSON.toJSONString(entry))
-                                .setCommittedIndex(lastApplied)
-                                .setTerm(currentTerm)
-                                .build();
-                        AppendEntriesResponce responce = blockingStub.appendEntries(request);
-                        if(entry!=null && responce.getSuccess() == true) {
-                            addNextIndex(followerIndex);
-                        }
-                        try {
-                            Thread.sleep(3);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+                    AppendEntriesResponce responce = blockingStub.appendEntries(request);
+                    if(entry!=null && responce.getSuccess() == true) {
+                        addNextIndex(followerIndex);
                     }
+                    Thread.interrupted();
                 }
-            }.start();
+            }).start();
         }
     }
 
@@ -202,11 +194,7 @@ public class RaftNode implements RaftServer{
             String valueJson = request.getValueJson();
             int entryIndex = addEntry(key, valueJson);
             while(!ok(entryIndex)) {
-                try {
-                    Thread.sleep(1);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                Thread.interrupted();
             }
             commit(log.get(entryIndex));
             PutResponce responce = PutResponce.newBuilder()
@@ -221,11 +209,7 @@ public class RaftNode implements RaftServer{
             String key = request.getKey();
             int entryIndex = addEntry(key, null);
             while(!ok(entryIndex)) {
-                try {
-                    Thread.sleep(1);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+                Thread.interrupted();
             }
             String result = commit(log.get(entryIndex));
             GetResponce responce = GetResponce.newBuilder()
@@ -235,6 +219,4 @@ public class RaftNode implements RaftServer{
             responseObserver.onCompleted();
         }
     }
-
-
 }

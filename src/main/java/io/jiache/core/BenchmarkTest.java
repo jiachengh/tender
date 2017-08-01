@@ -1,4 +1,4 @@
-package io.jiache;
+package io.jiache.core;
 
 import io.jiache.core.Address;
 import io.jiache.core.Client;
@@ -12,9 +12,9 @@ import java.util.List;
 /**
  * Created by jiacheng on 17-7-31.
  */
-public class Test {
+public class BenchmarkTest {
     private static int clientNum = 3;
-    private static int benchmarkSize = 500;
+    private static int benchmarkSize = 20000;
     private static int followerNum = 18;
     public static void main(String[] args) throws IOException, InterruptedException {
         if(args.length>0){

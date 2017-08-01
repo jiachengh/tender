@@ -95,7 +95,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>io.jiache.Test</mainClass>
+              <mainClass>io.jiache.core.BenchmarkTest</mainClass>
             </manifest>
           </archive>
           <descriptorRefs>

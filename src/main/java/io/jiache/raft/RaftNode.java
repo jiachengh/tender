@@ -152,7 +152,11 @@ public class RaftNode implements RaftServer{
                     if(entry!=null && responce.getSuccess() == true) {
                         addNextIndex(followerIndex);
                     }
-                    Thread.interrupted();
+                    try {
+                        Thread.sleep(1);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
             }).start();
         }

@@ -1,4 +1,4 @@
-package io.jiache.core;
+package io.jiache.test;
 
 import io.jiache.core.Address;
 import io.jiache.core.Client;
@@ -13,9 +13,9 @@ import java.util.List;
  * Created by jiacheng on 17-7-31.
  */
 public class BenchmarkTest {
-    private static int clientNum = 3;
+    private static int clientNum = 1;
     private static int benchmarkSize = 20000;
-    private static int followerNum = 18;
+    private static int followerNum = 4;
     public static void main(String[] args) throws IOException, InterruptedException {
         if(args.length>0){
             if(args.length != 3){
@@ -28,7 +28,7 @@ public class BenchmarkTest {
         }
         List<Address> addresses = new ArrayList<>();
         List<RaftServer> raftServers = new ArrayList<>();
-        // 开启5个服务器端口分别为8900-8904
+        // 开启followerNum+leaderNum个服务器端口分别为8900-8904
         for(int i=0; i<followerNum+1; ++i) {
             addresses.add(new Address("127.0.0.1", 8900+i));
             raftServers.add(new RaftNode());

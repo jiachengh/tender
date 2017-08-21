@@ -16,6 +16,11 @@ public interface RaftServer {
     void start(Address address) throws IOException, InterruptedException;
 
     /**
+     * address已经初始化后，启动server
+     */
+    void start() throws IOException, InterruptedException;
+
+    /**
      * 配置follower的地址，并开始AppendEntries RPC
      * @param followerAddresses
      */

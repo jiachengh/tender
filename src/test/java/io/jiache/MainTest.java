@@ -1,29 +1,26 @@
 package io.jiache;
 
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.IntFunction;
+import java.util.stream.Collectors;
 
 /**
  * Created by jiacheng on 17-7-26.
  */
 
 public class MainTest {
-    public static void main(String[] args) {
-        int i = 0;
-        CompletableFuture<Integer> future = CompletableFuture.supplyAsync(
-                ()->{
-                    for(int j=0; j<100000; ++j) {
-                        System.out.println(j);
-                    }
-                    return 99;
-                }
-        );
-        future.thenAccept((k)->System.out.println("hello" + k));
-        for(int k=0; k<100000; ++k)
-            System.out.println("hahaha");
-        i = future.join();
-
+    @Test
+    public void run() {
+        List<Integer> list = Arrays.asList(4,3,5,2,1,8,6,3,5,7);
+        List<Integer> res = list.parallelStream().sorted().collect(Collectors.toList());
+        System.out.println(res);
     }
 
 }

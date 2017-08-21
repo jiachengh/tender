@@ -48,4 +48,12 @@ public class Address {
         result = 31 * result + (port != null ? port.hashCode() : 0);
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "Address{" +
+                "ip='" + ip + '\'' +
+                ", port=" + port +
+                '}';
+    }
 }

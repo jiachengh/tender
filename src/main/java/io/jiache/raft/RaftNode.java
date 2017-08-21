@@ -29,6 +29,8 @@ public class RaftNode implements RaftServer{
     private int lastApplied;
     private List<Integer> nextIndex;
 
+
+
     // follower中 加Entry的原子操作
     private synchronized void addEntry(Entry entry) throws InterruptedException {
         while (log.size() != entry.getLogIndex() ){
@@ -103,6 +105,11 @@ public class RaftNode implements RaftServer{
         nextIndex = new ArrayList<Integer>();
     }
 
+    public RaftNode(Address address) {
+        this();
+        this.address = address;
+    }
+
     @Override
     public void start(Address address) throws IOException, InterruptedException {
         // 启动服务器, 监听端口
@@ -120,6 +127,14 @@ public class RaftNode implements RaftServer{
 //                })
 //        );
         raftServer.awaitTermination();
+    }
+
+    @Override
+    public void start() throws IOException, InterruptedException {
+        if(this.address == null) {
+            throw new RuntimeException("raftnode didn't init address");
+        }
+        start(this.address);
     }
 
     @Override
@@ -222,5 +237,9 @@ public class RaftNode implements RaftServer{
             responseObserver.onNext(responce);
             responseObserver.onCompleted();
         }
+    }
+
+    public Address getAddress() {
+        return address;
     }
 }

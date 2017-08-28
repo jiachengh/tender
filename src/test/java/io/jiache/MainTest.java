@@ -1,26 +1,21 @@
 package io.jiache;
 
-import org.junit.Test;
-
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-import java.util.function.IntFunction;
-import java.util.stream.Collectors;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.concurrent.*;
 
 /**
  * Created by jiacheng on 17-7-26.
  */
 
 public class MainTest {
-    @Test
-    public void run() {
-        List<Integer> list = Arrays.asList(4,3,5,2,1,8,6,3,5,7);
-        List<Integer> res = list.parallelStream().sorted().collect(Collectors.toList());
-        System.out.println(res);
+    public static void main(String[] args) {
+        Random random =new Random();
+        for(int i=0; i<100; ++i) {
+            System.out.println(random.nextInt(10));
+        }
     }
 
 }

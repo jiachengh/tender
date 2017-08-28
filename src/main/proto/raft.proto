@@ -4,55 +4,62 @@ option java_multiple_files = true;
 option java_package = "io.jiache.grpc";
 option java_outer_classname = "RaftProto";
 
-package raft;
+package io.jiache.grpc;
 
-service RaftService {
-    rpc AppendEntries (AppendEntriesRequest) returns (AppendEntriesResponce) {}
-    rpc RequestVote (RequestVoteRequest) returns (RequestVoteResponce) {}
-    rpc Put (PutRequest) returns (PutResponce) {}
-    rpc Get (GetRequest) returns (GetResponce) {}
+
+// Operation Service
+service OperationService{
+    rpc put (PutRequest) returns (PutReply) {}
+    rpc get (GetRequest) returns (GetReply) {}
 }
 
-message AppendEntriesRequest{
+message PutRequest {
+    string key = 1;
+    string value = 2;
+}
+
+message PutReply {
+    bool success = 1;
+}
+
+message GetRequest {
+    string key = 1;
+}
+
+message GetReply {
+    string value = 1;
+}
+
+// Basic Service
+service BasicService {
+    rpc appendEntries (AppendEntriesRequest) returns (AppendEntriesReply) {}
+    rpc requestVote (RequestVoteRequest) returns (RequestVoteReply) {}
+}
+
+message AppendEntriesRequest {
     int32 term = 1;
-    string leaderIp = 2;
+    string leaderHost = 2;
     int32 leaderPort = 3;
     int32 committedIndex = 4;
     int32 preLogTerm = 5;
     string entryJson = 6;
 }
 
-message AppendEntriesResponce{
+message AppendEntriesReply {
     int32 term = 1;
     bool success = 2;
 }
 
+
 message RequestVoteRequest{
     int32 term = 1;
-    string candidateIp = 2;
+    string candidateHost = 2;
     int32 candidatePort = 3;
     int32 lastLogIndex = 4;
     int32 lastLogTerm = 5;
 }
 
-message RequestVoteResponce{
+message RequestVoteReply {
     int32 term = 1;
     bool voteGranted = 2;
-}
-
-message PutRequest{
-    string key = 1;
-    string valueJson = 2;
-}
-
-message PutResponce{
-    bool sucess = 1;
-}
-
-message GetRequest{
-    string key = 1;
-}
-
-message GetResponce{
-    string value = 1;
 }

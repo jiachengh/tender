@@ -13,7 +13,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 /**
- * Created by jiacheng on 17-8-28.
+ * Created by jiacheng on 17-8-27.
  */
 public class RaftServer {
     public enum State {

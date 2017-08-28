@@ -3,7 +3,7 @@ package io.jiache.raft.server;
 import java.util.ArrayList;
 
 /**
- * Created by jiacheng on 17-8-28.
+ * Created by jiacheng on 17-8-27.
  */
 public class Log {
     private volatile ArrayList<Entry> entries = new ArrayList<>();

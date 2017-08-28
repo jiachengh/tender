@@ -5,7 +5,7 @@ import io.jiache.util.Address;
 import java.util.List;
 
 /**
- * Created by jiacheng on 17-8-28.
+ * Created by jiacheng on 17-8-27.
  */
 public class ServerContext {
     private List<Address> members;

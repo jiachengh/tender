@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by jiacheng on 17-8-28.
+ * Created by jiacheng on 17-8-26.
  */
 public class StateMachineImpl implements StateMachine {
     private Map<String, String> map = new HashMap<>();

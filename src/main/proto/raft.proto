@@ -1,65 +1,62 @@
 syntax = "proto3";
 
-option java_multiple_files = true;
-option java_package = "io.jiache.grpc";
-option java_outer_classname = "RaftProto";
-
 package io.jiache.grpc;
 
+option java_multiple_files = true;
+option java_package = "io.jiache.grpc";
 
-// Operation Service
-service OperationService{
-    rpc put (PutRequest) returns (PutReply) {}
-    rpc get (GetRequest) returns (GetReply) {}
+service RaftServer{
+    rpc put (PutRequest) returns (PutResponse) {}
+    rpc get (GetRequest) returns (GetResponse) {}
+    rpc getLastApply (GetLastApplyRequest) returns (GetLastApplyResponse) {}
+    rpc appendEntries (AppendEntriesRequest) returns (AppendEntriesResponse) {}
 }
 
 message PutRequest {
-    string key = 1;
-    string value = 2;
+    bytes key = 1;
+    bytes value = 2;
 }
 
-message PutReply {
+message PutResponse {
     bool success = 1;
+    uint32 leaderIndex = 2;
 }
 
 message GetRequest {
-    string key = 1;
+    bytes key = 1;
 }
 
-message GetReply {
-    string value = 1;
+message GetResponse {
+    bool success = 1;
+    bytes value = 2;
 }
 
-// Basic Service
-service BasicService {
-    rpc appendEntries (AppendEntriesRequest) returns (AppendEntriesReply) {}
-    rpc requestVote (RequestVoteRequest) returns (RequestVoteReply) {}
+message GetLastApplyRequest {
+}
+
+message GetLastApplyResponse {
+    bool success = 1;
+    uint64 lastApply = 2;
+}
+
+
+message Entry {
+    uint64 term = 1;
+    uint64 index = 2;
+    bytes key = 3;
+    bytes value = 4;
 }
 
 message AppendEntriesRequest {
-    int32 term = 1;
-    string leaderHost = 2;
-    int32 leaderPort = 3;
-    int32 committedIndex = 4;
-    int32 preLogTerm = 5;
-    string entryJson = 6;
+    uint64 term = 1;
+    uint64 preLogIndex = 2;
+    uint64 committedIndex = 3;
+    uint32 leaderIndex = 4;
+    repeated Entry entries = 5;
 }
 
-message AppendEntriesReply {
-    int32 term = 1;
-    bool success = 2;
-}
-
-
-message RequestVoteRequest{
-    int32 term = 1;
-    string candidateHost = 2;
-    int32 candidatePort = 3;
-    int32 lastLogIndex = 4;
-    int32 lastLogTerm = 5;
-}
-
-message RequestVoteReply {
-    int32 term = 1;
-    bool voteGranted = 2;
+message AppendEntriesResponse {
+    bool success = 1;
+    uint64 term = 2;
+    uint64 lastIndex = 3;
 }

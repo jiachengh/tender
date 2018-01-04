@@ -1,58 +1,52 @@
 package io.jiache.raft.client;
 
 import io.jiache.util.Address;
-import io.jiache.util.Assert;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
-/**
- * Created by jiacheng on 17-8-22.
- */
 public interface Client {
-    enum State {
-        CONNECTED,
-        CLOSE
-    }
 
-    static Builder builder(List<Address> cluster) {
-        return new Builder(cluster);
+    void connectTo(int index);
+
+    void randomConnect();
+
+    void close();
+
+    boolean ifConnected();
+
+    boolean put(byte[] key, byte[] value);
+
+    byte[] get(byte[] key);
+
+
+    static Builder newBuilder() {
+        return new Builder();
     }
 
 
     final class Builder implements io.jiache.util.Builder<Client> {
-        private final List<Address> cluster;
-        private String clientId = UUID.randomUUID().toString();
+        private List<Address> addressList = new ArrayList<>();
+        private Executor executor;
 
-        private Builder(List<Address> cluster) {
-            Assert.checkNull(cluster,"cluster");
-            this.cluster = cluster;
+        private Builder() {
         }
 
-        public Builder withClientId(String clientId) {
-            Assert.checkNull(clientId, "clientId");
-            this.clientId = clientId;
+        public Builder appendAddress(Address address) {
+            addressList.add(address);
+            return this;
+        }
+
+        public Builder setExecutor(Executor executor) {
+            this.executor = executor;
             return this;
         }
 
         @Override
         public Client build() {
-            return new DefaultClient(clientId, cluster);
+            return new DefaultClient(addressList, executor);
         }
     }
-
-    CompletableFuture<Boolean> put(String key, String value);
-
-    CompletableFuture<String> get(String key);
-
-    CompletableFuture<Client> connect();
-
-    CompletableFuture<Client> connect(List<Address> members);
-
-    CompletableFuture<Void> close();
-
-    State state();
 
 }

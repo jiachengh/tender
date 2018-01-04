@@ -1,26 +1,24 @@
 package io.jiache.util;
 
-/**
- * Created by jiacheng on 17-8-25.
- */
+
 public class Address {
-    private String host;
-    private int port;
+    private final String host;
+    private final int port;
 
-    public Address() {
-    }
-
-    public Address(String host, int port) {
+    private Address(String host, int port) {
         this.host = host;
         this.port = port;
     }
 
-    public Address(String address) {
-        Assert.checkNull(address, "address");
+    public static Address newAddress(String host, Integer port) {
+        return new Address(host, port);
+    }
+
+    public static Address parseFromString(String address) {
         String[] components = address.split(":");
-        Assert.check(components.length == 2, "address must be address:port");
-        this.host = components[0];
-        this.port = Integer.parseInt(components[1]);
+        String host = components[0];
+        int port = Integer.parseInt(components[1]);
+        return new Address(host, port);
     }
 
     public String getHost() {

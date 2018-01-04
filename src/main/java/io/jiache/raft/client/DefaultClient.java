@@ -1,62 +1,79 @@
 package io.jiache.raft.client;
 
-import io.jiache.raft.client.session.ClientSession;
+import com.google.protobuf.ByteString;
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+import io.jiache.grpc.*;
 import io.jiache.util.Address;
-import io.jiache.util.Assert;
 import io.jiache.util.Random;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 
-/**
- * Created by jiacheng on 17-8-27.
- */
+
 public class DefaultClient implements Client{
-    private final String clientId;
-    private List<Address> cluster;
-    private ClientSession session;
-    private volatile State state = State.CLOSE;
+    private ManagedChannel channel;
+    private RaftServerGrpc.RaftServerBlockingStub blockingStub;
+    private final List<Address> addressList;
+    private final Executor executor;
 
-    public DefaultClient(String clientId, List<Address> cluster) {
-        this.clientId = clientId;
-        this.cluster = cluster;
+    private static final Long IDLE_TIMEOUT = 3000L;
+
+    DefaultClient(List<Address> addresses, Executor executor) {
+        this.addressList = addresses;
+        this.executor = executor;
     }
 
     @Override
-    public CompletableFuture<Boolean> put(String key, String value) {
-        Assert.check(state == State.CONNECTED, "client didn't connected");
-        return CompletableFuture.supplyAsync(()-> session.put(key, value));
+    public boolean put(byte[] key, byte[] value) {
+        PutRequest request = PutRequest.newBuilder()
+                .setKey(ByteString.copyFrom(key))
+                .setValue(ByteString.copyFrom(value))
+                .build();
+        PutResponse response = blockingStub.put(request);
+        return response.getSuccess();
     }
 
     @Override
-    public CompletableFuture<String> get(String key) {
-        Assert.check(state == State.CONNECTED, "client didn't connected");
-        return CompletableFuture.supplyAsync(()-> session.get(key));
+    public byte[] get(byte[] key) {
+        GetRequest request = GetRequest.newBuilder()
+                .setKey(ByteString.copyFrom(key))
+                .build();
+        GetResponse response = blockingStub.get(request);
+        if (response.getSuccess()) {
+            return response.getValue().toByteArray();
+        } else {
+            return null;
+        }
     }
 
     @Override
-    public CompletableFuture<Client> connect() {
-        Assert.checkNull(cluster, "cluster");
-
-        return CompletableFuture.supplyAsync(()->{
-            session = new ClientSession(cluster.get(Random.nextInt(cluster.size())));
-            return this;
-        });
+    public void connectTo(int index) {
+        close();
+        channel = ManagedChannelBuilder.forAddress(addressList.get(index).getHost(), addressList.get(index).getPort())
+                .usePlaintext(true)
+                .idleTimeout(IDLE_TIMEOUT, TimeUnit.MILLISECONDS)
+                .executor(executor)
+                .build();
+        blockingStub = RaftServerGrpc.newBlockingStub(channel);
     }
 
     @Override
-    public CompletableFuture<Client> connect(List<Address> members) {
-        this.cluster = members;
-        return connect();
+    public void randomConnect() {
+        int index = Random.nextInt(addressList.size());
+        connectTo(index);
     }
 
     @Override
-    public CompletableFuture<Void> close() {
-        return CompletableFuture.runAsync(()->session.close());
+    public void close() {
+        if (channel != null && !channel.isShutdown()) {
+            channel.shutdown();
+        }
     }
 
     @Override
-    public State state() {
-        return state;
+    public boolean ifConnected() {
+        return blockingStub!=null && !channel.isShutdown();
     }
 }

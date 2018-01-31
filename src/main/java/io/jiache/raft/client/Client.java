@@ -19,6 +19,7 @@ public class Client {
     private Address leaderAddress;
     private List<Address> followerAddress;
 
+    private Integer connectTo; // 1:leader 2:follower
     private static final Long IDLE_TIMEOUT = 3000L;
 
     public Client(Address leaderAddress, List<Address> followerAddress) {
@@ -26,7 +27,7 @@ public class Client {
         this.followerAddress = followerAddress;
     }
 
-    public boolean putFromLeader(byte[] key, byte[] value) {
+    private boolean putFromLeader(byte[] key, byte[] value) {
         LeaderPutRequest request = LeaderPutRequest.newBuilder()
                 .setKey(ByteString.copyFrom(key))
                 .setValue(ByteString.copyFrom(value))
@@ -35,7 +36,7 @@ public class Client {
         return response.getSuccess();
     }
 
-    public byte[] getFromLeader(byte[] key) {
+    private byte[] getFromLeader(byte[] key) {
         LeaderGetRequest request = LeaderGetRequest.newBuilder()
                 .setKey(ByteString.copyFrom(key))
                 .build();
@@ -47,7 +48,7 @@ public class Client {
         }
     }
 
-    public boolean putFromFollower(byte[] key, byte[] value) {
+    private boolean putFromFollower(byte[] key, byte[] value) {
         FollowerPutRequest request = FollowerPutRequest.newBuilder()
                 .setKey(ByteString.copyFrom(key))
                 .setValue(ByteString.copyFrom(value))
@@ -56,7 +57,7 @@ public class Client {
         return response.getSuccess();
     }
 
-    public byte[] getFromFollower(byte[] key) {
+    private byte[] getFromFollower(byte[] key) {
         FollowerGetRequest request = FollowerGetRequest.newBuilder()
                 .setKey(ByteString.copyFrom(key))
                 .build();
@@ -68,12 +69,27 @@ public class Client {
         }
     }
 
+    public boolean put(byte[] key, byte[] value) {
+        if (connectTo == 1) {
+            return putFromLeader(key, value);
+        }
+        return putFromFollower(key, value);
+    }
+
+    public byte[] get(byte[] key) {
+        if (connectTo == 2) {
+            return getFromLeader(key);
+        }
+        return getFromFollower(key);
+    }
+
     public void connectToLeader() {
         leaderChannel = ManagedChannelBuilder.forAddress(leaderAddress.getHost(), leaderAddress.getPort())
                 .usePlaintext(true)
                 .idleTimeout(IDLE_TIMEOUT, TimeUnit.MILLISECONDS)
                 .build();
         leaderBlockingStub = LeaderServerGrpc.newBlockingStub(leaderChannel);
+        connectTo = 1;
     }
 
     public void connectToRandomFollower() {
@@ -84,6 +100,7 @@ public class Client {
                 .idleTimeout(IDLE_TIMEOUT, TimeUnit.MILLISECONDS)
                 .build();
         followerBlockingStub = FollowerServerGrpc.newBlockingStub(followerChannel);
+        connectTo = 2;
     }
 
     public void close() {

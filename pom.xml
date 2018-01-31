@@ -89,7 +89,7 @@
                           <archive>
                               <manifest>
                                   <mainClass>
-                                      io.jiache.raft.server.ServerApp
+                                      io.jiache.raft.server.LeaderApp
                                   </mainClass>
                               </manifest>
                           </archive>

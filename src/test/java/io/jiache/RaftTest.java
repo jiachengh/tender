@@ -1,9 +1,12 @@
 package io.jiache;
 
+import com.google.protobuf.ByteString;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
@@ -11,12 +14,11 @@ import java.util.stream.Collectors;
 public class RaftTest {
     @Test
     public void raftTest() {
-        byte[] base = new byte[1024];
-        String baseS = new String(base);
-        System.out.println(baseS);
-        System.out.println(baseS + "end");
-        System.out.println(baseS.getBytes().length);
-        System.out.println(baseS.length());
+        Map<byte[], byte[]> map = new HashMap<>();
+        byte[] originalKey = "Value".getBytes();
+        byte[] bufKey = ByteString.copyFrom(originalKey).toByteArray();
+        map.put(originalKey, "value".getBytes());
+        System.out.println(new String(originalKey).equals(new String(bufKey)));
     }
 
 }

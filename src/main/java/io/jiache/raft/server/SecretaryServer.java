@@ -22,7 +22,7 @@ public class SecretaryServer extends SecretaryServerGrpc.SecretaryServerImplBase
     private List<Address> followerList;
     private List<FollowerServerGrpc.FollowerServerBlockingStub> followerStubs = new ArrayList<>();
     private ExecutorService executor = Executors.newCachedThreadPool();
-    private final int DEFAULT_WIN_SIZE = 10;
+    private final int DEFAULT_WIN_SIZE = 50;
 
     public SecretaryServer(Address thisAddress, List<Address> followerList) {
         this.thisAddress = thisAddress;
@@ -82,7 +82,7 @@ public class SecretaryServer extends SecretaryServerGrpc.SecretaryServerImplBase
                 }
             }
             if (response != null) {
-                next.set(response.getLastIndex());
+                next.set(response.getLastIndex() + 1);
             }
             try {
                 Thread.sleep(RaftOptions.secretaryToFollowerMilliSeconds);

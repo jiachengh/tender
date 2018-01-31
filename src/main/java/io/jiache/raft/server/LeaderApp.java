@@ -27,7 +27,6 @@ public class LeaderApp {
         String leaderAddressString = paras.get("leaderAddress");
         String followerAddressString = paras.get("followerAddresses");
         String secretaryAddressString = paras.get("secretaryAddresses");
-
         // Leader Address
         String[] leaderSS = leaderAddressString.split(":");
         Address leaderAddress = Address.newAddress(leaderSS[0], Integer.parseInt(leaderSS[1]));
@@ -41,10 +40,12 @@ public class LeaderApp {
 
         // Secretary Addresses
         List<Address> secretaryAddresses = new ArrayList<>();
-        Arrays.stream(secretaryAddressString.split(",")).forEach(addressString -> {
-            String[] ss = addressString.split(":");
-            secretaryAddresses.add(Address.newAddress(ss[0], Integer.parseInt(ss[1])));
-        });
+        if (secretaryAddressString != null) {
+            Arrays.stream(secretaryAddressString.split(",")).forEach(addressString -> {
+                String[] ss = addressString.split(":");
+                secretaryAddresses.add(Address.newAddress(ss[0], Integer.parseInt(ss[1])));
+            });
+        }
         LeaderServer leaderServer = new LeaderServer(leaderAddress,followerAddresses, secretaryAddresses);
         leaderServer.start();
         System.out.println("leader started");

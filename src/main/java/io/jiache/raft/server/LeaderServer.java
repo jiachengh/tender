@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 public class LeaderServer extends LeaderServerGrpc.LeaderServerImplBase {
-    private AtomicLong commitIndex = new AtomicLong(-1);
+    private final AtomicLong commitIndex = new AtomicLong(-1);
 
     private Address leaderAddress;
     private List<Address> followerAddresses;
@@ -83,7 +83,7 @@ public class LeaderServer extends LeaderServerGrpc.LeaderServerImplBase {
             final int index = i;
             executor.submit(() -> appendToFollower(index));
         }
-        for (int i = 0; i < followerChannels.size(); ++i) {
+        for (int i = 0; i < secretaryAddresses.size(); ++i) {
             final int index = i;
             executor.submit(() -> appendToSecretary(index));
         }
@@ -94,9 +94,12 @@ public class LeaderServer extends LeaderServerGrpc.LeaderServerImplBase {
         AtomicLong next = nextLogIndex.get(index);
         FollowerServerGrpc.FollowerServerBlockingStub stub = followerBlockingStubs.get(index);
         for (;;) {
-            Entry entry = log.get(next.intValue());
-            FollowerAppendEntriesFromLeaderRequest request = FollowerAppendEntriesFromLeaderRequest.newBuilder()
-                    .addEntry(entry)
+            FollowerAppendEntriesFromLeaderRequest.Builder builder = FollowerAppendEntriesFromLeaderRequest.newBuilder();
+            if (secretaryAddresses.size() == 0 && log.getLastIndex() >= next.get()) {
+                Entry entry = log.get(next.intValue());
+                builder.addEntry(entry);
+            }
+            FollowerAppendEntriesFromLeaderRequest request = builder
                     .setLastCommitted(commitIndex.get())
                     .build();
             FollowerAppendEntriesFromLeaderResponse response = stub.appendEntriesFromLeader(request);
@@ -127,7 +130,7 @@ public class LeaderServer extends LeaderServerGrpc.LeaderServerImplBase {
                         .addAllEntries(entries)
                         .build();
                 response = stub.appendEntries(request);
-                next = response.getAckIndex();
+                next = response.getAckIndex() + 1;
                 winSize = response.getWinSize();
             }
             try {
@@ -139,16 +142,26 @@ public class LeaderServer extends LeaderServerGrpc.LeaderServerImplBase {
     }
 
     private void checkAndCommit() {
-        List<Long> sortedReplicated = nextLogIndex.stream()
-                .map(AtomicLong::get)
-                .sorted()
-                .collect(Collectors.toList());
-        Long newCommit = sortedReplicated.get(sortedReplicated.size() / 2 + 1);
-        for (long i = commitIndex.get(); i <= newCommit; ++i) {
-            Entry entry = log.get((int) i);
-            stateMachine.put(entry.getKey().toByteArray(), entry.getValue().toByteArray());
-            commitIndex.incrementAndGet();
-            commitIndex.notify(); // 通知put操作的阻塞线程
+        while(true) {
+            System.out.println("LeaderServer 146 nextIndex:" + nextLogIndex);
+            List<Long> sortedReplicated = nextLogIndex.stream()
+                    .map(AtomicLong::get)
+                    .sorted()
+                    .collect(Collectors.toList());
+            Long newCommit = sortedReplicated.get((int) (sortedReplicated.size() / 2.0 + 0.5)) - 1;
+            for (long i = commitIndex.get() + 1; i <= newCommit; ++i) {
+                Entry entry = log.get((int) i);
+                stateMachine.put(entry.getKey().toByteArray(), entry.getValue().toByteArray());
+                commitIndex.incrementAndGet();
+                synchronized (commitIndex) {
+                    commitIndex.notify(); // 通知put操作的阻塞线程
+                }
+            }
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 

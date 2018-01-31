@@ -27,7 +27,7 @@ public class EntryBuffer {
     }
 
     public List<Entry> getRange(long begin, long end) {
-        end = Math.min(lastIndex.get(), end);
+        end = Math.min(lastIndex.get() + 1, end);
         if (begin < end) {
             return entries.subList((int)begin, (int)end);
         } else {

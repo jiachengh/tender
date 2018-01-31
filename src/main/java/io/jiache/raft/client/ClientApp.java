@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 
 public class ClientApp {
     /**
@@ -84,24 +83,22 @@ public class ClientApp {
                 client.put(("helloKey" + w).getBytes(), ("helloValue" + w).getBytes());
             }
             for (int r = 0; r < helloSize; ++r) {
-                client.get(("helloKey" + r).getBytes());
+                String helloResult = new String(client.get(("helloKey" + r).getBytes()));
             }
         });
 
         // send message and record time
         String base = new String(new byte[block]);
-        clients.forEach(client -> {
+        clients.forEach(client ->  executorService.submit(() -> {
             long begin = System.currentTimeMillis();
             for (int w = 0; w < write; ++w) {
                 client.put(("key" + w).getBytes(), (w + base).getBytes());
             }
             for (int r = 0; r < read; ++r) {
                 String value = new String(client.get(("key" + (r % write)).getBytes()));
-                System.out.println(value);
             }
             long end = System.currentTimeMillis();
-            System.out.printf("cost %.6f seconds", ((double)end - begin) / 1e3);
-        });
-
+            System.out.printf("cost %.6f seconds", ((double) end - begin) / 1e3);
+        }));
     }
 }

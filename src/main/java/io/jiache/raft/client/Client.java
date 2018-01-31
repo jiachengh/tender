@@ -77,7 +77,7 @@ public class Client {
     }
 
     public byte[] get(byte[] key) {
-        if (connectTo == 2) {
+        if (connectTo == 1) {
             return getFromLeader(key);
         }
         return getFromFollower(key);

@@ -4,6 +4,7 @@ import io.jiache.grpc.Entry;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class Log {
@@ -27,9 +28,11 @@ public class Log {
     }
 
     public List<Entry> getRange(long begin, long end) {
-        end = Math.min(lastIndex.get(), end);
+        end = Math.min(lastIndex.get() + 1, end);
         if (begin < end) {
-            return entries.subList((int)begin, (int)end);
+            synchronized (lastIndex) {
+                return entries.subList((int) begin, (int) end);
+            }
         } else {
             return new ArrayList<>();
         }

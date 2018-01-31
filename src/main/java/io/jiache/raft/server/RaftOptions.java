@@ -1,7 +1,7 @@
 package io.jiache.raft.server;
 
 public interface RaftOptions {
-    long leaderToFollowerMilliSeconds = 200L;
-    long leaderToSecretaryMilliSeconds = 500L;
-    long secretaryToFollowerMilliSeconds = 500L;
+    long leaderToFollowerMilliSeconds = 20L;
+    long leaderToSecretaryMilliSeconds = 20L;
+    long secretaryToFollowerMilliSeconds = 20L;
 }

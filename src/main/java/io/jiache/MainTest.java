@@ -11,10 +11,16 @@ import java.util.concurrent.Executors;
 public class MainTest {
     public static void main(String[] args) {
         ExecutorService executorService = Executors.newCachedThreadPool();
+//        String[] commandLeader = {
+//                "--leaderAddress=127.0.0.1:7700",
+//                "--followerAddresses=127.0.0.1:7900,127.0.0.1:7901,127.0.0.1:7902,127.0.0.1:7903",
+//                "--secretaryAddresses=127.0.0.1:7800,127.0.0.1:7801"
+//        };
+
         String[] commandLeader = {
                 "--leaderAddress=127.0.0.1:7700",
                 "--followerAddresses=127.0.0.1:7900,127.0.0.1:7901,127.0.0.1:7902,127.0.0.1:7903",
-                "--secretaryAddresses=127.0.0.1:7800,127.0.0.1:7801"
+                "--secretaryAddresses="
         };
 
         String[] commandSecretary0 = {
@@ -52,8 +58,8 @@ public class MainTest {
         };
 
         executorService.submit(() -> LeaderApp.main(commandLeader));
-        executorService.submit(() -> SecretaryApp.main(commandSecretary0));
-        executorService.submit(() -> SecretaryApp.main(commandSecretary1));
+//        executorService.submit(() -> SecretaryApp.main(commandSecretary0));
+//        executorService.submit(() -> SecretaryApp.main(commandSecretary1));
         executorService.submit(() -> FollowerApp.main(commandFollower0));
         executorService.submit(() -> FollowerApp.main(commandFollower1));
         executorService.submit(() -> FollowerApp.main(commandFollower2));
@@ -65,8 +71,8 @@ public class MainTest {
                 "--read=100",
                 "--write=50",
                 "--block=1024",
-                "--thread=2",
-                "--connectTo=0"
+                "--thread=10",
+                "--connectTo=1"
         };
         executorService.submit(() -> ClientApp.main(commandClient));
 

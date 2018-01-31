@@ -124,15 +124,14 @@ public class LeaderServer extends LeaderServerGrpc.LeaderServerImplBase {
         long next = response.getAckIndex() + 1;
         long winSize = response.getWinSize();
         while (true) {
-            if (next <= log.getLastIndex()) {
-                List<Entry> entries = log.getRange(next, next + winSize);
-                SecretaryAppendEntriesRequest request = SecretaryAppendEntriesRequest.newBuilder()
-                        .addAllEntries(entries)
-                        .build();
-                response = stub.appendEntries(request);
-                next = response.getAckIndex() + 1;
-                winSize = response.getWinSize();
+            SecretaryAppendEntriesRequest.Builder requestBuilder = SecretaryAppendEntriesRequest.newBuilder();
+            for (int i = 0; i < winSize && next <= log.getLastIndex(); ++i, ++next) {
+                Entry entry = log.get((int) next);
+                requestBuilder.addEntries(entry);
             }
+            response = stub.appendEntries(requestBuilder.build());
+            next = response.getAckIndex() + 1;
+            winSize = response.getWinSize();
             try {
                 Thread.sleep(RaftOptions.leaderToSecretaryMilliSeconds);
             } catch (InterruptedException e) {
@@ -143,7 +142,7 @@ public class LeaderServer extends LeaderServerGrpc.LeaderServerImplBase {
 
     private void checkAndCommit() {
         while(true) {
-            System.out.println("LeaderServer 146 nextIndex:" + nextLogIndex);
+//            System.out.println("LeaderServer 146 nextIndex:" + nextLogIndex);
             List<Long> sortedReplicated = nextLogIndex.stream()
                     .map(AtomicLong::get)
                     .sorted()

@@ -77,7 +77,7 @@ public class ClientApp {
         }
 
         // hello
-        int helloSize = 5;
+        int helloSize = 1;
         clients.forEach(client -> {
             for (int w = 0; w < helloSize; ++w) {
                 client.put(("helloKey" + w).getBytes(), ("helloValue" + w).getBytes());
@@ -86,7 +86,7 @@ public class ClientApp {
                 String helloResult = new String(client.get(("helloKey" + r).getBytes()));
             }
         });
-
+        System.out.println("begin benchmark");
         // send message and record time
         String base = new String(new byte[block]);
         clients.forEach(client ->  executorService.submit(() -> {
@@ -96,9 +96,10 @@ public class ClientApp {
             }
             for (int r = 0; r < read; ++r) {
                 String value = new String(client.get(("key" + (r % write)).getBytes()));
+//                System.out.println(value);
             }
             long end = System.currentTimeMillis();
-            System.out.printf("cost %.6f seconds", ((double) end - begin) / 1e3);
+            System.out.printf("cost %.6f seconds\n", ((double) end - begin) / 1e3);
         }));
     }
 }

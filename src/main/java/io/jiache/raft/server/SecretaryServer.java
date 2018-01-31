@@ -68,21 +68,15 @@ public class SecretaryServer extends SecretaryServerGrpc.SecretaryServerImplBase
         AtomicLong next = nextIndex.get(index);
         FollowerServerGrpc.FollowerServerBlockingStub stub = followerStubs.get(index);
         while (true) {
-            List<Entry> entries = buffer.getRange(next.get(), buffer.getLastIndex() + 1);
-            Entry entry;
-            FollowerAppendEntriesFromSecretaryResponse response = null;
-            for (int i = 0; i < entries.size(); ++i) {
-                entry = entries.get(i);
+            FollowerAppendEntriesFromSecretaryResponse response;
+            while (next.get() <= buffer.getLastIndex()) {
+                Entry entry = buffer.get((int) next.get());
                 FollowerAppendEntriesFromSecretaryRequest request = FollowerAppendEntriesFromSecretaryRequest.newBuilder()
                         .addEntry(entry)
                         .build();
                 response = stub.appendEntriesFromSecretary(request);
-                if (!response.getSuccess()) {
-                    break;
-                }
-            }
-            if (response != null) {
                 next.set(response.getLastIndex() + 1);
+
             }
             try {
                 Thread.sleep(RaftOptions.secretaryToFollowerMilliSeconds);
@@ -91,6 +85,7 @@ public class SecretaryServer extends SecretaryServerGrpc.SecretaryServerImplBase
             }
         }
     }
+
 
     @Override
     public void appendEntries(SecretaryAppendEntriesRequest request, StreamObserver<SecretaryAppendEntriesResponse> responseObserver) {

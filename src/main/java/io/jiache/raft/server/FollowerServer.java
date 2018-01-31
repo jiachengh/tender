@@ -108,11 +108,11 @@ public class FollowerServer extends FollowerServerGrpc.FollowerServerImplBase {
         long leaderLastCommitted = request.getLastCommitted();
         entryList.forEach(log::append);
         // committed
-        entryList = log.getRange(commitIndex.get() + 1, leaderLastCommitted);
-        entryList.forEach(entry -> {
+        while (commitIndex.get() <= leaderLastCommitted && commitIndex.get() < log.getLastIndex()) {
+            Entry entry = log.get(commitIndex.intValue() + 1);
             stateMachine.put(entry.getKey().toByteArray(), entry.getValue().toByteArray());
             commitIndex.incrementAndGet();
-        });
+        }
         FollowerAppendEntriesFromLeaderResponse response = FollowerAppendEntriesFromLeaderResponse
                 .newBuilder()
                 .setLastIndex(log.getLastIndex())

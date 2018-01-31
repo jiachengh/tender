@@ -71,7 +71,7 @@ public class MainTest {
                 "--read=100",
                 "--write=50",
                 "--block=1024",
-                "--thread=10",
+                "--thread=50",
                 "--connectTo=1"
         };
         executorService.submit(() -> ClientApp.main(commandClient));

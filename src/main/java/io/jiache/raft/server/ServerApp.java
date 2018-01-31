@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 public class ServerApp {
@@ -26,7 +25,7 @@ public class ServerApp {
                 .collect(Collectors.toList());
         int localIndex = Integer.parseInt(paras.get("localIndex"));
         if (localIndex == 0) { // leader
-            Leader leader = Leader.newBuilder()
+            LeaderServer leader = LeaderServer.newBuilder()
                     .setMembers(addressList)
                     .setLeaderIndex(new AtomicInteger(0))
                     .setLocalIndex(localIndex)
@@ -34,7 +33,7 @@ public class ServerApp {
                     .build();
             executorService.submit(leader::start);
         } else { // follower
-            Follower follower = Follower.newBuilder()
+            FollowerServer follower = FollowerServer.newBuilder()
                     .setMembers(addressList)
                     .setLeaderIndex(new AtomicInteger(0))
                     .setLocalIndex(localIndex)

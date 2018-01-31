@@ -40,10 +40,7 @@ public class ClientApp {
 
         for (int i = 0; i < thread; ++i) {
             executorService.submit(() -> {
-                Client.Builder clientBuilder = Client.newBuilder();
-                servers.forEach(clientBuilder::appendAddress);
-                clientBuilder.setExecutor(executorService);
-                Client client = clientBuilder.build();
+                Client client = new Client(servers, executorService);
                 client.randomConnect();
                 for (int w = 0; w < write; ++w) {
                     client.put(("key" + w).getBytes(), ("value" + w).getBytes());

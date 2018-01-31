@@ -1,18 +1,14 @@
 package io.jiache.raft.server;
 
-import io.jiache.util.Builder;
-
+import javax.annotation.concurrent.ThreadSafe;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Created by jiacheng on 17-8-25.
- */
+@ThreadSafe
 public class StateMachine {
-    private final Map<byte[], byte[]> store;
+    private final Map<byte[], byte[]> store = new ConcurrentHashMap<>();
 
-    private StateMachine(Map<byte[], byte[]> store) {
-        this.store = store;
+    public StateMachine() {
     }
 
     public byte[] get(byte[] key) {
@@ -23,21 +19,4 @@ public class StateMachine {
         store.put(key, value);
     }
 
-    public static Builder newBuilder() {
-        return new Builder();
-    }
-
-    public static class Builder implements io.jiache.util.Builder<StateMachine> {
-        private Map<byte[], byte[]> store = new ConcurrentHashMap<>();
-
-        public Builder setStore(Map<byte[], byte[]> store) {
-            this.store = store;
-            return this;
-        }
-
-        @Override
-        public StateMachine build() {
-            return new StateMachine(store);
-        }
-    }
 }

@@ -5,58 +5,91 @@ package io.jiache.grpc;
 option java_multiple_files = true;
 option java_package = "io.jiache.grpc";
 
-service RaftServer{
-    rpc put (PutRequest) returns (PutResponse) {}
-    rpc get (GetRequest) returns (GetResponse) {}
-    rpc getLastApply (GetLastApplyRequest) returns (GetLastApplyResponse) {}
-    rpc appendEntries (AppendEntriesRequest) returns (AppendEntriesResponse) {}
-}
-
-message PutRequest {
-    bytes key = 1;
-    bytes value = 2;
-}
-
-message PutResponse {
-    bool success = 1;
-    uint32 leaderIndex = 2;
-}
-
-message GetRequest {
-    bytes key = 1;
-}
-
-message GetResponse {
-    bool success = 1;
-    bytes value = 2;
-}
-
-message GetLastApplyRequest {
-}
-
-message GetLastApplyResponse {
-    bool success = 1;
-    uint64 lastApply = 2;
-}
-
-
 message Entry {
-    uint64 term = 1;
     uint64 index = 2;
     bytes key = 3;
     bytes value = 4;
 }
 
-message AppendEntriesRequest {
-    uint64 term = 1;
-    uint64 preLogIndex = 2;
-    uint64 committedIndex = 3;
-    uint32 leaderIndex = 4;
-    repeated Entry entries = 5;
+// --------- Leader -------------
+service LeaderServer {
+    rpc put (LeaderPutRequest) returns (LeaderPutResponse) {}
+    rpc get (LeaderGetRequest) returns (LeaderGetResponse) {}
+    rpc getLastApply (LeaderGetLastApplyRequest) returns (LeaderGetLastApplyResponse) {}
 }
 
-message AppendEntriesResponse {
+message LeaderPutRequest {
+    bytes key = 1;
+    bytes value = 2;
+}
+
+message LeaderPutResponse {
     bool success = 1;
-    uint64 term = 2;
-    uint64 lastIndex = 3;
+}
+
+message LeaderGetRequest {
+    bytes key = 1;
+}
+
+message LeaderGetResponse {
+    bool success = 1;
+    bytes value = 2;
+}
+
+message LeaderGetLastApplyRequest {
+}
+
+message LeaderGetLastApplyResponse {
+    bool success = 1;
+    uint64 lastApply = 2;
+}
+
+
+// --------- Secretary -------------
+service SecretaryServer {
+    rpc appendEntries (SecretaryAppendEntriesRequest) returns (SecretaryAppendEntriesResponse) {}
+}
+
+message SecretaryAppendEntriesRequest {
+    repeated Entry entries = 1;
+}
+
+message SecretaryAppendEntriesResponse {
+    uint64 ackIndex = 1;
+    uint64 winSize = 2;
+}
+
+// --------- Follower -------------
+service FollowerServer {
+    rpc put (FollowerPutRequest) returns (FollowerPutResponse) {}
+    rpc get (FollowerGetRequest) returns (FollowerGetResponse) {}
+    rpc appendEntries (FollowerAppendEntriesRequest) returns (FollowerAppendEntriesResponse) {}
+}
+
+message FollowerPutRequest {
+    bytes key = 1;
+    bytes value = 2;
+}
+
+message FollowerPutResponse {
+    bool success = 1;
+}
+
+message FollowerGetRequest {
+    bytes key = 1;
+}
+
+message FollowerGetResponse {
+    bool success = 1;
+    bytes value = 2;
+}
+
+message FollowerAppendEntriesRequest {
+    Entry entry = 1;
+    uint64 lastCommitted = 2;
+}
+
+message FollowerAppendEntriesResponse {
+    bool success = 1;
+    uint64 lastIndex = 2;
 }

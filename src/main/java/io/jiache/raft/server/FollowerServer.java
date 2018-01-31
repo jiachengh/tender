@@ -14,7 +14,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class Follower extends RaftServerGrpc.RaftServerImplBase {
+public class FollowerServer extends FollowerServerGrpc.FollowerServerImplBase {
     private final List<Address> members;
     private final AtomicInteger leaderIndex;
     private final Integer localIndex;
@@ -27,7 +27,7 @@ public class Follower extends RaftServerGrpc.RaftServerImplBase {
     private final Log log;
     private final StateMachine stateMachine;
 
-    private Follower(List<Address> members, AtomicInteger leaderIndex, Integer localIndex, AtomicLong term, AtomicLong commitIndex, AtomicLong applyIndex, List<ManagedChannel> managedChannels, List<RaftServerGrpc.RaftServerBlockingStub> stubs, ExecutorService executorService, Log log, StateMachine stateMachine) {
+    public FollowerServer(List<Address> members, AtomicInteger leaderIndex, Integer localIndex, AtomicLong term, AtomicLong commitIndex, AtomicLong applyIndex, List<ManagedChannel> managedChannels, List<RaftServerGrpc.RaftServerBlockingStub> stubs, ExecutorService executorService, Log log, StateMachine stateMachine) {
         this.members = members;
         this.leaderIndex = leaderIndex;
         this.localIndex = localIndex;
@@ -59,83 +59,6 @@ public class Follower extends RaftServerGrpc.RaftServerImplBase {
         }
     }
 
-    public static Builder newBuilder(){
-        return new Builder();
-    }
-
-    public static class Builder implements io.jiache.util.Builder<Follower> {
-        private List<Address> members;
-        private AtomicInteger leaderIndex;
-        private Integer localIndex;
-        private AtomicLong term = new AtomicLong(0);
-        private AtomicLong commitIndex = new AtomicLong(-1);
-        private AtomicLong applyIndex = new AtomicLong(-1);
-        private List<ManagedChannel> managedChannels;
-        private List<RaftServerGrpc.RaftServerBlockingStub> stubs;
-        private ExecutorService executorService;
-        private Log log = Log.newBuilder().build();
-        private StateMachine stateMachine = StateMachine.newBuilder().build();
-
-        public Builder setMembers(List<Address> members) {
-            this.members = members;
-            return this;
-        }
-
-        public Builder setLeaderIndex(AtomicInteger leaderIndex) {
-            this.leaderIndex = leaderIndex;
-            return this;
-        }
-
-        public Builder setLocalIndex(Integer localIndex) {
-            this.localIndex = localIndex;
-            return this;
-        }
-
-        public Builder setTerm(AtomicLong term) {
-            this.term = term;
-            return this;
-        }
-
-        public Builder setCommitIndex(AtomicLong commitIndex) {
-            this.commitIndex = commitIndex;
-            return this;
-        }
-
-        public Builder setApplyIndex(AtomicLong applyIndex) {
-            this.applyIndex = applyIndex;
-            return this;
-        }
-
-        public Builder setManagedChannels(List<ManagedChannel> managedChannels) {
-            this.managedChannels = managedChannels;
-            return this;
-        }
-
-        public Builder setStubs(List<RaftServerGrpc.RaftServerBlockingStub> stubs) {
-            this.stubs = stubs;
-            return this;
-        }
-
-        public Builder setExecutorService(ExecutorService executorService) {
-            this.executorService = executorService;
-            return this;
-        }
-
-        public Builder setLog(Log log) {
-            this.log = log;
-            return this;
-        }
-
-        public Builder setStateMachine(StateMachine stateMachine) {
-            this.stateMachine = stateMachine;
-            return this;
-        }
-
-        @Override
-        public Follower build() {
-            return new Follower(members, leaderIndex, localIndex, term, commitIndex, applyIndex, managedChannels, stubs, executorService, log, stateMachine);
-        }
-    }
 
     @Override
     public void put(PutRequest request, StreamObserver<PutResponse> responseObserver) {

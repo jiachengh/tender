@@ -142,7 +142,7 @@ public class LeaderServer extends LeaderServerGrpc.LeaderServerImplBase {
 
     private void checkAndCommit() {
         while(true) {
-            System.out.println("LeaderServer 146 nextIndex:" + nextLogIndex);
+//            System.out.println("LeaderServer 146 nextIndex:" + nextLogIndex);
             List<Long> sortedReplicated = nextLogIndex.stream()
                     .map(AtomicLong::get)
                     .sorted()

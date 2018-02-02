@@ -13,17 +13,28 @@ public class LeaderApp {
      * --leaderAddress=leaderHost:port
      * --followerAddresses=followerHost0:port0,followerHost1:port1,followerHost2:port2,...
      * --secretaryAddresses=secretaryHost0:port0,secretaryHost1:port1,...
+     * --leaderToFollowerMilliSeconds=20
+     * --leaderToSecretaryMilliSeconds=20
+     * --secretaryToFollowerMilliSeconds=20
+     * --leaderCommitMilliSeconds=20
      */
     public static void main(String[] args) {
-        if (args.length != 3) {
+        if (args.length < 3) {
             System.out.println("    /**\n" +
                     "     * --leaderAddress=leaderHost:port\n" +
                     "     * --followerAddresses=followerHost0:port0,followerHost1:port1,followerHost2:port2,...\n" +
                     "     * --secretaryAddresses=secretaryHost0:port0,secretaryHost1:port1,...\n" +
+                    "     * --leaderToFollowerMilliSeconds=20\n" +
+                    "     * --leaderToSecretaryMilliSeconds=20\n" +
+                    "     * --secretaryToFollowerMilliSeconds=20\n" +
+                    "     * --leaderCommitMilliSeconds=20\n" +
                     "     */");
             return;
         }
         Map<String, String> paras = ParaParser.parse(args);
+        // 修改RaftOptions参数
+        RaftOptions.load(paras);
+
         String leaderAddressString = paras.get("leaderAddress");
         String followerAddressString = paras.get("followerAddresses");
         String secretaryAddressString = paras.get("secretaryAddresses");

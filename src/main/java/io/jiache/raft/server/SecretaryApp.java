@@ -12,16 +12,27 @@ public class SecretaryApp {
     /**
      * --thisAddress=host:port
      * --followerAddresses=followerHost0:port0,followerHost1:port1,followerHost2:port2,...
+     * --leaderToFollowerMilliSeconds=20
+     * --leaderToSecretaryMilliSeconds=20
+     * --secretaryToFollowerMilliSeconds=20
+     * --leaderCommitMilliSeconds=20
      */
     public static void main(String[] args) {
-        if (args.length != 2) {
-            System.out.println("   /**\n" +
+        if (args.length < 2) {
+            System.out.println("    /**\n" +
                     "     * --thisAddress=host:port\n" +
                     "     * --followerAddresses=followerHost0:port0,followerHost1:port1,followerHost2:port2,...\n" +
+                    "     * --leaderToFollowerMilliSeconds=20\n" +
+                    "     * --leaderToSecretaryMilliSeconds=20\n" +
+                    "     * --secretaryToFollowerMilliSeconds=20\n" +
+                    "     * --leaderCommitMilliSeconds=20\n" +
                     "     */");
             return;
         }
         Map<String, String> paras = ParaParser.parse(args);
+        // 修改RaftOptions
+        RaftOptions.load(paras);
+
         String thisAddressString = paras.get("thisAddress");
         String followerAddressString = paras.get("followerAddresses");
 

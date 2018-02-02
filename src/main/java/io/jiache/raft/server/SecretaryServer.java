@@ -79,7 +79,7 @@ public class SecretaryServer extends SecretaryServerGrpc.SecretaryServerImplBase
 
             }
             try {
-                Thread.sleep(RaftOptions.secretaryToFollowerMilliSeconds);
+                Thread.sleep(RaftOptions.getSecretaryToFollowerMilliSeconds());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

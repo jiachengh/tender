@@ -107,7 +107,7 @@ public class LeaderServer extends LeaderServerGrpc.LeaderServerImplBase {
                 next.set(response.getLastIndex() + 1);
             }
             try {
-                Thread.sleep(RaftOptions.leaderToFollowerMilliSeconds);
+                Thread.sleep(RaftOptions.getLeaderToFollowerMilliSeconds());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -133,7 +133,7 @@ public class LeaderServer extends LeaderServerGrpc.LeaderServerImplBase {
             next = response.getAckIndex() + 1;
             winSize = response.getWinSize();
             try {
-                Thread.sleep(RaftOptions.leaderToSecretaryMilliSeconds);
+                Thread.sleep(RaftOptions.getLeaderToSecretaryMilliSeconds());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -157,7 +157,7 @@ public class LeaderServer extends LeaderServerGrpc.LeaderServerImplBase {
                 }
             }
             try {
-                Thread.sleep(200);
+                Thread.sleep(RaftOptions.getLeaderCommitMilliSeconds());
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

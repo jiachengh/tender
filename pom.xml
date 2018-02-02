@@ -90,7 +90,7 @@
                           <archive>
                               <manifest>
                                   <mainClass>
-                                      io.jiache.raft.server.SecretaryApp
+                                      io.jiache.raft.server.FollowerApp
                                   </mainClass>
                               </manifest>
                           </archive>

@@ -84,8 +84,8 @@ public class FollowerServer extends FollowerServerGrpc.FollowerServerImplBase {
         if (leaderResponse.getSuccess()) {
             long leaderCommitIndex = leaderResponse.getLastCommit();
             // 等到当前的commitIndex大于leaderCommitIndex
-            while (commitIndex.get() < leaderCommitIndex) {
-                synchronized (commitIndex) {
+            synchronized (commitIndex) {
+                while (commitIndex.get() < leaderCommitIndex) {
                     try {
                         commitIndex.wait(); // 等到commit的时候notifyAll
                     } catch (InterruptedException e) {
@@ -112,6 +112,9 @@ public class FollowerServer extends FollowerServerGrpc.FollowerServerImplBase {
             Entry entry = log.get(commitIndex.intValue() + 1);
             stateMachine.put(entry.getKey().toByteArray(), entry.getValue().toByteArray());
             commitIndex.incrementAndGet();
+        }
+        synchronized (commitIndex) {
+            commitIndex.notifyAll();
         }
         FollowerAppendEntriesFromLeaderResponse response = FollowerAppendEntriesFromLeaderResponse
                 .newBuilder()

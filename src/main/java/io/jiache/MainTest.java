@@ -11,17 +11,21 @@ import java.util.concurrent.Executors;
 public class MainTest {
     public static void main(String[] args) {
         ExecutorService executorService = Executors.newCachedThreadPool();
-        String[] commandLeader = {
-                "--leaderAddress=127.0.0.1:7700",
-                "--followerAddresses=127.0.0.1:7900,127.0.0.1:7901,127.0.0.1:7902,127.0.0.1:7903",
-                "--secretaryAddresses=127.0.0.1:7800,127.0.0.1:7801"
-        };
-
-//        String[] commandLeader = {
-//                "--leaderAddress=127.0.0.1:7700",
-//                "--followerAddresses=127.0.0.1:7900,127.0.0.1:7901,127.0.0.1:7902,127.0.0.1:7903",
-//                "--secretaryAddresses="
-//        };
+        boolean secretaryTest = true;
+        String[] commandLeader;
+        if (secretaryTest) {
+            commandLeader = new String[]{
+                    "--leaderAddress=127.0.0.1:7700",
+                    "--followerAddresses=127.0.0.1:7900,127.0.0.1:7901,127.0.0.1:7902,127.0.0.1:7903",
+                    "--secretaryAddresses=127.0.0.1:7800,127.0.0.1:7801"
+            };
+        } else {
+            commandLeader = new String[]{
+                    "--leaderAddress=127.0.0.1:7700",
+                    "--followerAddresses=127.0.0.1:7900,127.0.0.1:7901,127.0.0.1:7902,127.0.0.1:7903",
+                    "--secretaryAddresses="
+            };
+        }
 
         String[] commandSecretary0 = {
                 "--thisAddress=127.0.0.1:7800",
@@ -58,8 +62,10 @@ public class MainTest {
         };
 
         executorService.submit(() -> LeaderApp.main(commandLeader));
-        executorService.submit(() -> SecretaryApp.main(commandSecretary0));
-        executorService.submit(() -> SecretaryApp.main(commandSecretary1));
+        if (secretaryTest) {
+            executorService.submit(() -> SecretaryApp.main(commandSecretary0));
+            executorService.submit(() -> SecretaryApp.main(commandSecretary1));
+        }
         executorService.submit(() -> FollowerApp.main(commandFollower0));
         executorService.submit(() -> FollowerApp.main(commandFollower1));
         executorService.submit(() -> FollowerApp.main(commandFollower2));
@@ -68,10 +74,10 @@ public class MainTest {
         String[] commandClient = {
                 "--leaderAddress=127.0.0.1:7700",
                 "--followerAddresses=127.0.0.1:7900,127.0.0.1:7901,127.0.0.1:7902,127.0.0.1:7903",
-                "--read=1000",
-                "--write=1000",
+                "--read=2000",
+                "--write=2000",
                 "--block=1024",
-                "--thread=50",
+                "--thread=4",
                 "--connectTo=0"
         };
         executorService.submit(() -> ClientApp.main(commandClient));
